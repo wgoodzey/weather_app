@@ -35,10 +35,10 @@ pub fn fetch(
     client: &reqwest::blocking::Client,
     lat: f64,
     lon: f64,
+    days: i8,
 ) -> reqwest::Result<WeatherResponse> {
     let url = format!(
-        "https://api.open-meteo.com/v1/forecast?latitude={}&longitude={}&daily=sunrise,sunset&hourly=temperature_2m,precipitation,weather_code&models=dwd_icon_seamless&current=weather_code,temperature_2m,apparent_temperature,precipitation,is_day&timezone=auto&forecast_days=3&wind_speed_unit=mph&temperature_unit=fahrenheit&precipitation_unit=inch",
-        lat, lon
+        "https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=sunrise,sunset&hourly=temperature_2m,precipitation,weather_code&models=dwd_icon_seamless&current=weather_code,temperature_2m,apparent_temperature,precipitation,is_day&timezone=auto&forecast_days={days}&wind_speed_unit=mph&temperature_unit=fahrenheit&precipitation_unit=inch"
     );
     client.get(&url).send()?.json()
 }
