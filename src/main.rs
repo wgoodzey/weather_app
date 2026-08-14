@@ -4,6 +4,7 @@ mod location;
 mod util;
 mod weather;
 mod weather_code;
+mod render;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = reqwest::blocking::Client::new();
@@ -35,6 +36,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     {
         println!("{day}: {} - {}", to_12_hour(sunrise), to_12_hour(sunset));
     }
+
+    let canvas = render::Canvas::new(80,24);
+
+    canvas.print();
 
     Ok(())
 }
