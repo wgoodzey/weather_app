@@ -12,7 +12,7 @@ pub struct Canvas {
 }
 
 impl Canvas {
-    pub fn new(width: usize, height: usize) -> Self {
+    pub fn new(waidth: usize, height: usize) -> Self {
         Self {
             cells: vec![vec![Cell::Empty; width]; height],
             width,
