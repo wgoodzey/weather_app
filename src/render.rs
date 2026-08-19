@@ -15,10 +15,9 @@ pub struct Canvas {
     height: usize,
 }
 
-const DAILY_COLS: [usize; 7] = [7, 19, 29, 39, 49, 59, 69];
-
-const HOURLY_COLS: [usize; 10] = [2, 10, 18, 26, 34, 42, 50, 58, 66, 74];
-
+fn make_dividers(width: usize, columns: usize) -> Vec<usize> {
+    (0..=columns).map(|i| i * (width - 1) / columns).collect()
+}
 impl Canvas {
     pub fn new(width: usize, height: usize) -> Self {
         Self {
@@ -81,12 +80,10 @@ impl Canvas {
 
     pub fn paint(&mut self, daily: &Daily, hourly: &Hourly, current_time: &str) {
         self.paint_daily(daily, 0);
-        self.paint_hourly(hourly, current_time, 9);
+        self.paint_hourly(hourly, current_time, 7);
     }
 
     fn paint_daily(&mut self, daily: &Daily, y0: usize) {
-        self.draw_dividers(&DAILY_COLS, y0, 8);
-
         let n = daily
             .time
             .len()
@@ -95,78 +92,95 @@ impl Canvas {
             .min(daily.temperature_2m_min.len())
             .min(daily.sunrise.len())
             .min(daily.sunset.len())
-            .min(DAILY_COLS.len() - 1);
+            .min(6);
+
+        if n == 0 {
+            return;
+        }
+
+        let cols = make_dividers(self.width, n);
+        self.draw_dividers(&cols, y0, 6);
 
         for i in 0..n {
-            let left = DAILY_COLS[i] + 1;
-            let width = DAILY_COLS[i + 1] - DAILY_COLS[i] - 1;
+            let left = cols[i] + 1;
+            let width = cols[i + 1] - cols[i] - 1;
 
             let date = format_month_day(&daily.time[i]);
-            self.set_str_centered(left, width, y0 + 1, &date);
 
-            self.set_icon_centered(left, width, y0 + 2, daily.weather_code[i]);
-
-            self.set_str_centered(
-                left,
-                width,
-                y0 + 3,
-                &format!("{:.0}°", daily.temperature_2m_max[i]),
-            );
-            self.set_str_centered(
-                left,
-                width,
-                y0 + 4,
-                &format!("{:.0}°", daily.temperature_2m_min[i]),
-            );
-
-            self.set_str_centered(left, width, y0 + 5, &to_12_hour(&daily.sunrise[i]));
-            self.set_str_centered(left, width, y0 + 6, &to_12_hour(&daily.sunset[i]));
-        }
-    }
-
-    fn paint_hourly(&mut self, hourly: &Hourly, current_time: &str, y0: usize) {
-        self.draw_dividers(&HOURLY_COLS, y0, 4);
-
-        let start = hourly
-            .time
-            .iter()
-            .position(|t| t.as_str() > current_time)
-            .unwrap_or(0);
-
-        let available = hourly
-            .time
-            .len()
-            .min(hourly.weather_code.len())
-            .min(hourly.temperature_2m.len())
-            .min(hourly.precipitation_probability.len());
-
-        let n = available.saturating_sub(start).min(HOURLY_COLS.len() - 1);
-
-        for i in 0..n {
-            let idx = start + i;
-            let left = HOURLY_COLS[i] + 1;
-            let width = HOURLY_COLS[i + 1] - HOURLY_COLS[i] - 1;
-
-            let time = hourly.time[idx].split('T').nth(1).unwrap_or("").to_string();
-            self.set_str_centered(left, width, y0, &time);
-
-            self.set_icon_centered(left, width, y0 + 1, hourly.weather_code[idx]);
+            self.set_str_centered(left, width, y0, &date);
+            self.set_icon_centered(left, width, y0 + 1, daily.weather_code[i]);
 
             self.set_str_centered(
                 left,
                 width,
                 y0 + 2,
-                &format!("{:.0}°", hourly.temperature_2m[idx]),
+                &format!("{:.0}°", daily.temperature_2m_max[i]),
             );
+
             self.set_str_centered(
                 left,
                 width,
                 y0 + 3,
-                &format!("{}%", hourly.precipitation_probability[idx]),
+                &format!("{:.0}°", daily.temperature_2m_min[i]),
             );
+
+            self.set_str_centered(left, width, y0 + 4, &to_12_hour(&daily.sunrise[i]));
+
+            self.set_str_centered(left, width, y0 + 5, &to_12_hour(&daily.sunset[i]));
         }
     }
 
+fn paint_hourly(&mut self, hourly: &Hourly, current_time: &str, y0: usize) {
+    let start = hourly
+        .time
+        .iter()
+        .position(|t| t.as_str() > current_time)
+        .unwrap_or(0);
+
+    let available = hourly
+        .time
+        .len()
+        .min(hourly.weather_code.len())
+        .min(hourly.temperature_2m.len())
+        .min(hourly.precipitation_probability.len());
+
+    let n = available.saturating_sub(start).min(9);
+
+    if n == 0 {
+        return;
+    }
+
+    let cols = make_dividers(self.width, n);
+    self.draw_dividers(&cols, y0, 4);
+
+    for i in 0..n {
+        let idx = start + i;
+        let left = cols[i] + 1;
+        let width = cols[i + 1] - cols[i] - 1;
+
+        let time = hourly.time[idx]
+            .split('T')
+            .nth(1)
+            .unwrap_or("");
+
+        self.set_str_centered(left, width, y0, time);
+        self.set_icon_centered(left, width, y0 + 1, hourly.weather_code[idx]);
+
+        self.set_str_centered(
+            left,
+            width,
+            y0 + 2,
+            &format!("{:.0}°", hourly.temperature_2m[idx]),
+        );
+
+        self.set_str_centered(
+            left,
+            width,
+            y0 + 3,
+            &format!("{}%", hourly.precipitation_probability[idx]),
+        );
+    }
+}
     pub fn render(&self) -> String {
         self.cells
             .iter()
