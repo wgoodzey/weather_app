@@ -1,10 +1,10 @@
 use crate::{util::to_12_hour, weather_code::WeatherCode};
 
 mod location;
+mod render;
 mod util;
 mod weather;
 mod weather_code;
-mod render;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = reqwest::blocking::Client::new();
@@ -13,7 +13,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("City: {}", loc.city);
     println!("Zip Code: {}", loc.zip);
 
-    let num_days: i8 = 3; // 1-7
+    let num_days: i8 = 6; // 1-7
 
     let w = weather::fetch(&client, loc.lat, loc.lon, num_days)?;
 
@@ -37,8 +37,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("{day}: {} - {}", to_12_hour(sunrise), to_12_hour(sunset));
     }
 
-    let canvas = render::Canvas::new(80,24);
-
+    let mut canvas = render::Canvas::new(80, 24);
+    canvas.paint(&w.daily, &w.hourly, &w.current.time);
     canvas.print();
 
     Ok(())

@@ -84,6 +84,15 @@ impl WeatherCode {
         }
     }
 
+    pub fn icon_width(&self) -> usize {
+        let cp = self.icon().chars().next().unwrap_or(' ') as u32;
+        if (0x1F300..=0x1FAFF).contains(&cp) {
+            2
+        } else {
+            1
+        }
+    }
+
     pub fn label(&self) -> &'static str {
         use WeatherCode::*;
         match self {
