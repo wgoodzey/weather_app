@@ -1,16 +1,10 @@
+use crate::location::Location;
 use crate::util::to_12_hour;
-use crate::weather::{Daily, Hourly};
+use crate::weather::{Current, Daily, Hourly};
 use crate::weather_code::WeatherCode;
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum Cell {
-    Empty,
-    Char(char),
-    Continuation,
-}
-
 pub struct Canvas {
-    cells: Vec<Vec<Cell>>,
+    cells: Vec<Vec<char>>,
     width: usize,
     height: usize,
 }
@@ -26,7 +20,7 @@ fn make_centered_dividers(canvas_width: usize, columns: usize, cell_width: usize
 impl Canvas {
     pub fn new(width: usize, height: usize) -> Self {
         Self {
-            cells: vec![vec![Cell::Empty; width]; height],
+            cells: vec![vec![' '; width]; height],
             width,
             height,
         }
@@ -34,7 +28,7 @@ impl Canvas {
 
     fn set_char(&mut self, x: usize, y: usize, ch: char) {
         if y < self.height && x < self.width {
-            self.cells[y][x] = Cell::Char(ch);
+            self.cells[y][x] = ch;
         }
     }
 
@@ -67,9 +61,28 @@ impl Canvas {
         }
     }
 
-    pub fn paint(&mut self, daily: &Daily, hourly: &Hourly, current_time: &str) {
-        self.paint_daily(daily, 0);
-        self.paint_hourly(hourly, current_time, 7);
+    pub fn paint(
+        &mut self,
+        location: &Location,
+        current: &Current,
+        daily: &Daily,
+        hourly: &Hourly,
+    ) {
+        self.paint_header(location, current, 0);
+        self.paint_daily(daily, 3);
+        self.paint_hourly(hourly, &current.time, 10);
+    }
+
+    fn paint_header(&mut self, location: &Location, current: &Current, y0: usize) {
+        let location_line = format!("{}, {}", location.city, location.zip);
+        let weather = WeatherCode::from_code(current.weather_code).icon();
+        let current_line = format!(
+            "{weather}  {:.0}°F  ·  FEELS {:.0}°F  ·  PRECIP {:.2} in",
+            current.temperature_2m, current.apparent_temperature, current.precipitation,
+        );
+
+        self.set_str_centered(0, self.width, y0, &location_line);
+        self.set_str_centered(0, self.width, y0 + 1, &current_line);
     }
 
     fn paint_daily(&mut self, daily: &Daily, y0: usize) {
@@ -173,15 +186,7 @@ impl Canvas {
     pub fn render(&self) -> String {
         self.cells
             .iter()
-            .map(|row| {
-                row.iter()
-                    .filter_map(|c| match c {
-                        Cell::Char(ch) => Some(*ch),
-                        Cell::Empty => Some(' '),
-                        Cell::Continuation => None,
-                    })
-                    .collect::<String>()
-            })
+            .map(|row| row.iter().collect::<String>())
             .collect::<Vec<_>>()
             .join("\n")
     }
