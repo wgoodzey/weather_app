@@ -68,28 +68,19 @@ impl WeatherCode {
     pub fn icon(&self) -> &'static str {
         use WeatherCode::*;
         match self {
-            ClearSky => "☀",
-            MainlyClear | PartlyCloudy => "🌤",
-            Overcast => "☁",
-            Fog | DepositingRimeFog => "🌫",
-            DrizzleLight | DrizzleModerate | DrizzleDense => "🌦",
-            FreezingDrizzleLight | FreezingDrizzleDense => "🌧",
-            RainSlight | RainModerate | RainHeavy => "🌧",
-            FreezingRainLight | FreezingRainHeavy => "❅",
-            SnowSlight | SnowModerate | SnowHeavy | SnowGrains => "❄",
-            RainShowersSlight | RainShowersModerate | RainShowersViolent => "🌦",
-            SnowShowersSlight | SnowShowersHeavy => "🌨",
-            ThunderstormSlight | ThunderstormHail => "⛈",
+            ClearSky => "SUN",
+            MainlyClear | PartlyCloudy => "P.CLD",
+            Overcast => "CLD",
+            Fog | DepositingRimeFog => "FOG",
+            DrizzleLight | DrizzleModerate | DrizzleDense => "DRZL",
+            FreezingDrizzleLight | FreezingDrizzleDense => "F.DRZL",
+            RainSlight | RainModerate | RainHeavy => "RAIN",
+            FreezingRainLight | FreezingRainHeavy => "F.RAIN",
+            SnowSlight | SnowModerate | SnowHeavy | SnowGrains => "SNOW",
+            RainShowersSlight | RainShowersModerate | RainShowersViolent => "SHWR",
+            SnowShowersSlight | SnowShowersHeavy => "SN.SHWR",
+            ThunderstormSlight | ThunderstormHail => "TSTM",
             Unknown => "?",
-        }
-    }
-
-    pub fn icon_width(&self) -> usize {
-        let cp = self.icon().chars().next().unwrap_or(' ') as u32;
-        if (0x1F300..=0x1FAFF).contains(&cp) {
-            2
-        } else {
-            1
         }
     }
 

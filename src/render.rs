@@ -33,13 +33,6 @@ impl Canvas {
         }
     }
 
-    fn set_wide_char(&mut self, x: usize, y: usize, ch: char) {
-        self.set_char(x, y, ch);
-        if x + 1 < self.width && y < self.height {
-            self.cells[y][x + 1] = Cell::Continuation;
-        }
-    }
-
     fn set_str(&mut self, x: usize, y: usize, s: &str) {
         for (i, ch) in s.chars().enumerate() {
             self.set_char(x + i, y, ch);
@@ -58,16 +51,7 @@ impl Canvas {
 
     fn set_icon_centered(&mut self, x: usize, width: usize, y: usize, code: i64) {
         let wc = WeatherCode::from_code(code);
-        let iw = wc.icon_width();
-        let Some(ch) = wc.icon().chars().next() else {
-            return;
-        };
-        let icon_x = x + width.saturating_sub(iw) / 2;
-        if iw == 2 {
-            self.set_wide_char(icon_x, y, ch);
-        } else {
-            self.set_char(icon_x, y, ch);
-        }
+        self.set_str_centered(x, width, y, wc.icon());
     }
 
     fn draw_dividers(&mut self, xs: &[usize], y0: usize, rows: usize) {
