@@ -130,57 +130,54 @@ impl Canvas {
         }
     }
 
-fn paint_hourly(&mut self, hourly: &Hourly, current_time: &str, y0: usize) {
-    let start = hourly
-        .time
-        .iter()
-        .position(|t| t.as_str() > current_time)
-        .unwrap_or(0);
+    fn paint_hourly(&mut self, hourly: &Hourly, current_time: &str, y0: usize) {
+        let start = hourly
+            .time
+            .iter()
+            .position(|t| t.as_str() > current_time)
+            .unwrap_or(0);
 
-    let available = hourly
-        .time
-        .len()
-        .min(hourly.weather_code.len())
-        .min(hourly.temperature_2m.len())
-        .min(hourly.precipitation_probability.len());
+        let available = hourly
+            .time
+            .len()
+            .min(hourly.weather_code.len())
+            .min(hourly.temperature_2m.len())
+            .min(hourly.precipitation_probability.len());
 
-    let n = available.saturating_sub(start).min(9);
+        let n = available.saturating_sub(start).min(9);
 
-    if n == 0 {
-        return;
+        if n == 0 {
+            return;
+        }
+
+        let cols = make_dividers(self.width, n);
+        self.draw_dividers(&cols, y0, 4);
+
+        for i in 0..n {
+            let idx = start + i;
+            let left = cols[i] + 1;
+            let width = cols[i + 1] - cols[i] - 1;
+
+            let time = hourly.time[idx].split('T').nth(1).unwrap_or("");
+
+            self.set_str_centered(left, width, y0, time);
+            self.set_icon_centered(left, width, y0 + 1, hourly.weather_code[idx]);
+
+            self.set_str_centered(
+                left,
+                width,
+                y0 + 2,
+                &format!("{:.0}°", hourly.temperature_2m[idx]),
+            );
+
+            self.set_str_centered(
+                left,
+                width,
+                y0 + 3,
+                &format!("{}%", hourly.precipitation_probability[idx]),
+            );
+        }
     }
-
-    let cols = make_dividers(self.width, n);
-    self.draw_dividers(&cols, y0, 4);
-
-    for i in 0..n {
-        let idx = start + i;
-        let left = cols[i] + 1;
-        let width = cols[i + 1] - cols[i] - 1;
-
-        let time = hourly.time[idx]
-            .split('T')
-            .nth(1)
-            .unwrap_or("");
-
-        self.set_str_centered(left, width, y0, time);
-        self.set_icon_centered(left, width, y0 + 1, hourly.weather_code[idx]);
-
-        self.set_str_centered(
-            left,
-            width,
-            y0 + 2,
-            &format!("{:.0}°", hourly.temperature_2m[idx]),
-        );
-
-        self.set_str_centered(
-            left,
-            width,
-            y0 + 3,
-            &format!("{}%", hourly.precipitation_probability[idx]),
-        );
-    }
-}
     pub fn render(&self) -> String {
         self.cells
             .iter()
