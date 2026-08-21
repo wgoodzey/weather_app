@@ -15,8 +15,13 @@ pub struct Canvas {
     height: usize,
 }
 
-fn make_dividers(width: usize, columns: usize) -> Vec<usize> {
-    (0..=columns).map(|i| i * (width - 1) / columns).collect()
+fn make_centered_dividers(canvas_width: usize, columns: usize, cell_width: usize) -> Vec<usize> {
+    let table_width = columns * (cell_width + 1) + 1;
+    let start = canvas_width.saturating_sub(table_width) / 2;
+
+    (0..=columns)
+        .map(|i| start + i * (cell_width + 1))
+        .collect()
 }
 impl Canvas {
     pub fn new(width: usize, height: usize) -> Self {
@@ -82,8 +87,11 @@ impl Canvas {
             return;
         }
 
-        let cols = make_dividers(self.width, n);
+        const DAILY_CELL_WIDTH: usize = 9;
+        let cols = make_centered_dividers(self.width, n, DAILY_CELL_WIDTH);
         self.draw_dividers(&cols, y0, 6);
+
+        let data_y = y0;
 
         for i in 0..n {
             let left = cols[i] + 1;
@@ -91,26 +99,25 @@ impl Canvas {
 
             let date = format_month_day(&daily.time[i]);
 
-            self.set_str_centered(left, width, y0, &date);
-            self.set_icon_centered(left, width, y0 + 1, daily.weather_code[i]);
+            self.set_str_centered(left, width, data_y, &date);
+            self.set_icon_centered(left, width, data_y + 1, daily.weather_code[i]);
 
             self.set_str_centered(
                 left,
                 width,
-                y0 + 2,
+                data_y + 2,
                 &format!("{:.0}°", daily.temperature_2m_max[i]),
             );
 
             self.set_str_centered(
                 left,
                 width,
-                y0 + 3,
+                data_y + 3,
                 &format!("{:.0}°", daily.temperature_2m_min[i]),
             );
 
-            self.set_str_centered(left, width, y0 + 4, &to_12_hour(&daily.sunrise[i]));
-
-            self.set_str_centered(left, width, y0 + 5, &to_12_hour(&daily.sunset[i]));
+            self.set_str_centered(left, width, data_y + 4, &to_12_hour(&daily.sunrise[i]));
+            self.set_str_centered(left, width, data_y + 5, &to_12_hour(&daily.sunset[i]));
         }
     }
 
@@ -134,7 +141,8 @@ impl Canvas {
             return;
         }
 
-        let cols = make_dividers(self.width, n);
+        const HOURLY_CELL_WIDTH: usize = 7;
+        let cols = make_centered_dividers(self.width, n, HOURLY_CELL_WIDTH);
         self.draw_dividers(&cols, y0, 4);
 
         for i in 0..n {
