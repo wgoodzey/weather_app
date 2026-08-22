@@ -4,7 +4,6 @@ use serde::Deserialize;
 pub struct Hourly {
     pub time: Vec<String>,
     pub temperature_2m: Vec<f64>,
-    pub precipitation: Vec<f64>,
     pub precipitation_probability: Vec<i64>,
     pub weather_code: Vec<i64>,
 }
@@ -26,7 +25,6 @@ pub struct Current {
     pub apparent_temperature: f64,
     pub weather_code: i64,
     pub precipitation: f64,
-    pub is_day: i64,
 }
 
 #[derive(Deserialize, Debug)]
@@ -43,7 +41,7 @@ pub fn fetch(
     days: i8,
 ) -> reqwest::Result<WeatherResponse> {
     let url = format!(
-        "https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=sunrise,sunset,temperature_2m_max,temperature_2m_min,weather_code&hourly=temperature_2m,precipitation,precipitation_probability,weather_code&models=dwd_icon_seamless&current=weather_code,temperature_2m,apparent_temperature,precipitation,is_day&timezone=auto&forecast_days={days}&wind_speed_unit=mph&temperature_unit=fahrenheit&precipitation_unit=inch"
+        "https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=sunrise,sunset,temperature_2m_max,temperature_2m_min,weather_code&hourly=temperature_2m,precipitation_probability,weather_code&models=dwd_icon_seamless&current=weather_code,temperature_2m,apparent_temperature,precipitation,&timezone=auto&forecast_days={days}&wind_speed_unit=mph&temperature_unit=fahrenheit&precipitation_unit=inch"
     );
 
     client.get(&url).send()?.json()

@@ -65,6 +65,7 @@ impl WeatherCode {
         }
     }
 
+    #[allow(dead_code)]
     pub fn icon(&self) -> &'static str {
         use WeatherCode::*;
         match self {
@@ -84,6 +85,7 @@ impl WeatherCode {
         }
     }
 
+    #[allow(dead_code)]
     pub fn label(&self) -> &'static str {
         use WeatherCode::*;
         match self {

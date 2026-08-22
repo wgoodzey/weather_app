@@ -183,6 +183,7 @@ impl Canvas {
             );
         }
     }
+
     pub fn render(&self) -> String {
         self.cells
             .iter()
