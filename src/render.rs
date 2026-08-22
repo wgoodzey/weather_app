@@ -17,6 +17,7 @@ fn make_centered_dividers(canvas_width: usize, columns: usize, cell_width: usize
         .map(|i| start + i * (cell_width + 1))
         .collect()
 }
+
 impl Canvas {
     pub fn new(width: usize, height: usize) -> Self {
         Self {
