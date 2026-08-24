@@ -7,7 +7,10 @@ mod weather_code;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = reqwest::blocking::Client::new();
 
-    let loc = location::fetch(&client)?;
+    let loc = match location::load_from_config() {
+        Some(loc) => loc,
+        None => location::fetch(&client)?,
+    };
 
     let num_days: i8 = 6; // 1-7
     let w = weather::fetch(&client, loc.lat, loc.lon, num_days)?;
