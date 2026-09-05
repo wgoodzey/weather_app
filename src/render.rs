@@ -329,5 +329,5 @@ fn format_month_day(iso_date: &str) -> String {
     let _year = parts.next();
     let month = parts.next().unwrap_or("00");
     let day = parts.next().unwrap_or("00");
-    format!("{month}/{day}")
+    return format!("{month}/{day}");
 }
